@@ -1,0 +1,47 @@
+for y=2010:2018
+ for m=01:12
+  datafiles= sprintf('GVN_radiation_%4d-%02d.tab',y,m);
+  fid = fopen(datafiles,'rt');
+  for i=1:27
+     fgetl(fid);
+  end
+  c= textscan(fid,'%4d-%2d-%2dT%2d:%2d%f%f%f%f%f%f%f%f%f%f','Delimiter','\t');fgetl(fid);
+year= c{1};
+month= c{2};
+days=c{3};
+T= c{13};
+daysinmonth= max(days);
+Tm=zeros (1,daysinmonth);
+for i= 1:daysinmonth
+dayindex= find(days==i);
+Tm(i)=nanmean(T(dayindex));
+end
+TmK= Tm+273;
+LWD= c{10};
+LWDm= zeros (1,daysinmonth);
+for i= 1:daysinmonth
+dayindex= find(days==i);
+LWDm(i)=nanmean(LWD(dayindex));
+end
+SBC=5.670373*10^-8;
+e= zeros(1,daysinmonth);
+for i= 1:daysinmonth
+e(i)= LWDm(i)./(SBC.*(TmK(i).^4));
+end
+a= [nanmean(e)];
+eval(sprintf('e_%02d= [a]', m));
+end
+allvalues= [e_01,e_02,e_03,e_04,e_05,e_06,e_07,e_08,e_09,e_10,e_11,e_12];
+txt = [num2str(y)];
+ plot(allvalues,'-s','DisplayName',txt)
+  ax = gca;
+ax.FontSize = 20;
+ hold all
+ hold on
+h=legend('Location','northeast')
+h.FontSize =14;
+xlabel('Months', 'Fontsize' , 23)
+ylabel('Emissivity', 'Fontsize' , 23)
+end
+
+
